@@ -9,9 +9,17 @@
 
 (async () => {
   while (true) {
+    // Wait for the tab contents to appear. If we don’t wait for the form to initialize enough, we end up breaking Ctrl+Enter.
+    // It is like Jira’s Ctrl+Enter logic relies on the default tab fully loading initially so it can set some state properly
+    // which is only used when submitting the form using Ctrl+Enter. See #1
+    await whenElementQuerySelectorAsync(document.body, `[data-testid='issue-transition.ui.issue-transition-modal--body'] [data-testid='issue-field.rich-text.ui.edit.editor']`);
+
     const replyToCustomerTabSelector = '#issue-transition-comment-editor-container-tabs-1';
     const replyToCustomerTab = await whenElementQuerySelectorAsync(document.body, replyToCustomerTabSelector);
+
+    // Hopefully we have waited enough now to avoid confusing the form.
     replyToCustomerTab.click();
+
     // Now wait for it to disappear so that the user may manually select “Add internal note” if they so desire and
     // to avoid spamming events when we already clicked on it.
     while (document.body.querySelector(replyToCustomerTabSelector)) {
